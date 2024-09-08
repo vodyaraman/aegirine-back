@@ -17,9 +17,11 @@ import { logError } from './hooks/log-error.js'
 import { mongodb } from './mongodb.js'
 import { services } from './services/index.js'
 import { channels } from './channels.js'
+import dotenv from 'dotenv';
 
 const app = express(feathers())
 
+dotenv.config();
 // Load app configuration
 app.configure(configuration(configurationValidator))
 app.use(cors())
