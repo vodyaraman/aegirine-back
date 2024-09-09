@@ -10,7 +10,6 @@ export const links = (app) => {
 
       const serviceUrl = `${req.protocol}://${req.get('host')}/${createdLink.serviceName}/${createdLink.connectionId}?token=${createdLink.jwtToken}`;
 
-      // Отправляем ссылку пользователю
       res.status(201).json({
         message: "Link created successfully.",
         link: serviceUrl
@@ -23,25 +22,22 @@ export const links = (app) => {
 
   app.get('/:serviceName/:connectionId', async (req, res) => {
     try {
-      const { serviceName, connectionId } = req.params;
+      const { connectionId } = req.params;
       const token = req.query.token;
 
       if (!token) {
         return res.status(401).json({ message: 'Authorization token missing in URL' });
       }
 
-      // Валидация JWT токена
       jwt.verify(token, secret, (err, decoded) => {
         if (err) {
           return res.status(403).json({ message: 'Invalid or expired token' });
         }
 
-        // Проверяем совпадает ли connectionId с токеном
         if (decoded.connectionId !== connectionId) {
           return res.status(403).json({ message: 'Invalid connection ID' });
         }
 
-        // Переадресация на /create
         res.redirect(`${process.env.CLIENT_HOST}create`);
       });
     } catch (error) {
