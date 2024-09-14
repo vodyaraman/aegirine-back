@@ -38,7 +38,7 @@ export const links = (app) => {
           return res.status(403).json({ message: 'Invalid connection ID' });
         }
 
-        res.redirect(`${process.env.CLIENT_HOST}create`);
+        res.redirect(`${process.env.CLIENT_HOST}redirect?token=${token}`);
       });
     } catch (error) {
       res.status(400).json({ error: error.message });
