@@ -1,36 +1,78 @@
+import multer from 'multer';
 import { ImagesService, getOptions as getImagesOptions } from './images.class.js';
 import { ClientLinksService, getOptions as getClientLinksOptions } from './clientLinks.class.js';
-import * as schemaHooks from '@feathersjs/schema';
 import { imageValidator } from './images.schema.js';
 import { clientLinkValidator } from './clientLinks.schema.js';
+import pkg from '@feathersjs/schema';
+
+const { validate } = pkg;
+
+// Настраиваем multer
+const upload = multer();
 
 export const assist = (app) => {
-  // Сервис для работы с изображениями
-  app.use('images', new ImagesService(getImagesOptions(app)), {
-    methods: ['find', 'get', 'create', 'patch', 'remove'],  // Поддерживаем все необходимые методы для работы с изображениями
+  const imagesService = new ImagesService(getImagesOptions(app));
+  const clientLinksService = new ClientLinksService(getClientLinksOptions(app));
+
+  // Маршрут для загрузки изображения
+  app.post('/images', upload.single('image'), async (req, res) => {
+    try {
+      // Создаем изображение
+      const createdImage = await imagesService.create(req.body, { file: req.file });
+      res.status(201).json(createdImage);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
-  // Сервис для работы с клиентскими ссылками
-  app.use('client-links', new ClientLinksService(getClientLinksOptions(app)), {
-    methods: ['find', 'get', 'create'],  // Для клиентских ссылок нам нужны только методы find, get и create
+  // Получение изображения
+  app.get('/images/:id', async (req, res) => {
+    try {
+      const image = await imagesService.get(req.params.id);
+      res.status(200).json(image);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
   });
 
-  // Получаем доступ к сервисам
-  const imagesService = app.service('images');
-  const clientLinksService = app.service('client-links');
-
-  // Хуки для изображений
-  imagesService.hooks({
-    before: {
-      create: [schemaHooks.validateData(imageValidator)],  // Валидация данных перед созданием
-      patch: [schemaHooks.validateData(imageValidator)],   // Валидация данных перед обновлением
-    },
+  // Обновление изображения
+  app.patch('/images/:id', async (req, res) => {
+    try {
+      await validate(imageValidator, req.body); // Валидируем данные перед обновлением
+      const updatedImage = await imagesService.patch(req.params.id, req.body);
+      res.status(200).json(updatedImage);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   });
 
-  // Хуки для клиентских ссылок
-  clientLinksService.hooks({
-    before: {
-      create: [schemaHooks.validateData(clientLinkValidator)],  // Валидация данных перед созданием клиентской ссылки
-    },
+  // Удаление изображения
+  app.delete('/images/:id', async (req, res) => {
+    try {
+      const result = await imagesService.remove(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  });
+
+  // Маршрут для работы с клиентскими ссылками
+  app.post('/client-links', async (req, res) => {
+    try {
+      await validate(clientLinkValidator, req.body); // Валидируем данные перед созданием
+      const createdClientLink = await clientLinksService.create(req.body);
+      res.status(201).json(createdClientLink);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get('/client-links/:id', async (req, res) => {
+    try {
+      const clientLink = await clientLinksService.get(req.params.id);
+      res.status(200).json(clientLink);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
   });
 };

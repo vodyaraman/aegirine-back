@@ -1,20 +1,23 @@
 import { MongoDBService } from '@feathersjs/mongodb';
-import { uploadImageToYandex, deleteImageFromYandex } from '../yandexStorage';
+import { uploadImage, deleteImage } from '../../yandexStorage.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ImagesService extends MongoDBService {
-  // Метод создания нового изображения
   async create(data, params) {
-    if (!data.imageId || !data.file) {
-      throw new Error('Missing required fields: imageId or file');
+    const file = params.file;  // Multer добавляет файл в params
+    if (!file) {
+      throw new Error('Missing required fields: file');
     }
 
-    // Загружаем изображение в Yandex Object Storage
-    const uploadResult = await uploadImageToYandex(data.file);
+    // Генерируем уникальный идентификатор для изображения
+    const imageId = uuidv4();
 
-    // Создаем новый объект изображения с URL из Yandex Object Storage
+    // Загружаем изображение в Yandex Object Storage
+    const uploadResult = await uploadImage(file, imageId);
+
     const newImage = {
-      imageId: data.imageId,
-      url: uploadResult.url,  // URL изображения из Yandex Object Storage
+      imageId: imageId, // Уникальный идентификатор для изображения
+      url: uploadResult.url,  // URL изображения, полученный из Yandex Object Storage
       description: data.description || '',
       createdAt: new Date().toISOString(),
     };
@@ -56,16 +59,20 @@ export class ImagesService extends MongoDBService {
       throw new Error(`Image with ID ${id} not found`);
     }
 
-    // Удаляем изображение из Yandex Object Storage
-    await deleteImageFromYandex(image.imageId);
+    try {
+      // Удаляем изображение из Yandex Object Storage
+      await deleteImage(image.imageId);
 
-    // Удаляем запись из MongoDB
-    await this.Model.deleteOne({ imageId: id });
-    return { message: `Image with ID ${id} has been deleted` };
+      // Удаляем запись из MongoDB
+      await this.Model.deleteOne({ imageId: id });
+      return { message: `Image with ID ${id} has been deleted` };
+    } catch (error) {
+      console.error('Ошибка при удалении изображения:', error);
+      throw new Error('Не удалось удалить изображение');
+    }
   }
 }
 
-// Настройки для сервиса изображений
 export const getOptions = (app) => {
   return {
     paginate: app.get('paginate'),
