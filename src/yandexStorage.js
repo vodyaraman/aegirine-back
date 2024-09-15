@@ -8,11 +8,6 @@ const BUCKET_NAME = process.env.YANDEX_BUCKET_NAME;
 const ACCESS_KEY = process.env.YANDEX_ACCESS_KEY;
 const SECRET_KEY = process.env.YANDEX_SECRET_KEY;
 
-console.log('REGION:', REGION);
-console.log('BUCKET_NAME:', BUCKET_NAME);
-console.log('ACCESS_KEY:', ACCESS_KEY);
-console.log('SECRET_KEY:', SECRET_KEY);
-
 const s3Client = new S3Client({
     region: REGION,
     endpoint: `https://storage.yandexcloud.net`,
