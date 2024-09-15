@@ -5,7 +5,7 @@ export const createMenuSchema = {
   $id: 'Menu',
   type: 'object',
   additionalProperties: false,
-  required: ['menuId', 'drinks', 'imageId'],
+  required: ['menuId', 'drinks'],
   properties: {
     menuId: { type: 'string' },
     title: {
@@ -33,14 +33,22 @@ export const createMenuSchema = {
           font: { type: 'string' },
           size: { type: 'string' },
           price: { type: 'number' },
-          backgroundColor: { type: 'string' } 
+          backgroundColor: { type: 'string' }
         }
       },
       minItems: 1
     },
-    imageId: { type: 'string' },
-    logoId: { type: 'string' },
-    mascotId: { type: 'string' },
+    images: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['imageId', 'url'],
+        properties: {
+          imageId: { type: 'string' },
+          url: { type: 'string', format: 'uri' }
+        }
+      }
+    },
     lastUpdated: { type: 'string', format: 'date-time' }
   }
 };

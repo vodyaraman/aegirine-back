@@ -9,7 +9,7 @@ export const imageSchema = {
     imageId: { type: 'string' },
     url: { type: 'string', format: 'uri' },
     description: { type: 'string' },
-  },
+  }
 };
 
 export const imageValidator = getValidator(imageSchema, dataValidator);

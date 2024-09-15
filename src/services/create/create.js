@@ -20,4 +20,14 @@ export const create = (app) => {
       res.status(400).json({ error: error.message });
     }
   });
+
+  // Новый GET эндпоинт для получения меню
+  app.get('/menu', async (req, res) => {
+    try {
+      const menu = await service.findMenuByToken({ headers: req.headers });
+      res.status(200).json(menu);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
 };

@@ -39,6 +39,7 @@
     "bundle:client": "npm pack --pack-destination ./public"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.651.1",
     "@feathersjs/adapter-commons": "^5.0.30",
     "@feathersjs/authentication": "^5.0.30",
     "@feathersjs/authentication-client": "^5.0.30",
@@ -50,6 +51,7 @@
     "@feathersjs/schema": "^5.0.30",
     "@feathersjs/socketio": "^5.0.30",
     "@feathersjs/transport-commons": "^5.0.30",
+    "aws-sdk": "^2.1691.0",
     "compression": "^1.7.4",
     "dotenv": "^16.4.5",
     "mongodb": "^6.8.0",

@@ -20,8 +20,7 @@ export class CreateMenuService extends MongoDBService {
         lastUpdated: new Date().toISOString()
       };
       existingMenu = await collection.insertOne(newMenu);
-    } 
-    else {
+    } else {
       const updatedData = {
         ...data,
         lastUpdated: new Date().toISOString()
@@ -50,6 +49,25 @@ export class CreateMenuService extends MongoDBService {
     }
 
     return { message: `Menu with ID ${menuId} has been deleted` };
+  }
+
+  // Новый метод для поиска меню по токену
+  async findMenuByToken(params) {
+    const db = await this.getDatabase();
+    const collection = db.collection('menu');
+
+    const token = params.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const menuId = decoded.connectionId;
+
+    const menu = await collection.findOne({ menuId });
+
+    if (!menu) {
+      throw new Error(`Menu with ID ${menuId} not found`);
+    }
+
+    return menu;
   }
 
   async getDatabase() {
