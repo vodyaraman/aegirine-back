@@ -38,9 +38,28 @@ export const createMenuSchema = {
       },
       minItems: 1
     },
-    imageId: { type: 'string' },  // Добавляем поле для хранения только ID изображения
-    mascotId: { type: 'string' },  // Поле для идентификатора талисмана
-    backgroundImage: { type: 'string' },  // Идентификатор фона меню
+    images: {
+      type: 'object',
+      properties: {
+        backgroundImage: {
+          type: 'object',
+          properties: {
+            imageId: { type: 'string' },
+            imageUrl: { type: 'string' }
+          },
+          additionalProperties: false
+        },
+        mascotImage: {
+          type: 'object',
+          properties: {
+            imageId: { type: 'string' },
+            imageUrl: { type: 'string' }
+          },
+          additionalProperties: false
+        }
+      },
+      additionalProperties: false
+    },
     lastUpdated: { type: 'string', format: 'date-time' }
   }
 };

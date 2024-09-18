@@ -21,7 +21,6 @@ export const create = (app) => {
     }
   });
 
-  // Новый GET эндпоинт для получения меню
   app.get('/menu', async (req, res) => {
     try {
       const menu = await service.findMenuByToken({ headers: req.headers });

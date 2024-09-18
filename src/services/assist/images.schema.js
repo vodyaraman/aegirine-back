@@ -6,7 +6,7 @@ export const imageSchema = {
   $id: 'Image',
   type: 'object',
   properties: {
-    imageId: { type: 'string', description: 'Уникальный идентификатор изображения', default: () => new ObjectId().toString() },  // Генерация id автоматически
+    imageId: { type: 'string', description: 'Уникальный идентификатор изображения', default: () => new ObjectId().toString() },
     url: { type: 'string', format: 'uri' },
     description: { type: 'string' },
   },

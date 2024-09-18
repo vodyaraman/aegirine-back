@@ -4,25 +4,22 @@ import { v4 as uuidv4 } from 'uuid';
 
 export class ImagesService extends MongoDBService {
   async create(data, params) {
-    const file = params.file;  // Multer добавляет файл в params
+    const file = params.file;
     if (!file) {
       throw new Error('Missing required fields: file');
     }
 
-    // Генерируем уникальный идентификатор для изображения
     const imageId = uuidv4();
 
-    // Загружаем изображение в Yandex Object Storage
     const uploadResult = await uploadImage(file, imageId);
 
     const newImage = {
-      imageId: imageId, // Уникальный идентификатор для изображения
-      url: uploadResult.url,  // URL изображения, полученный из Yandex Object Storage
+      imageId: imageId,
+      url: uploadResult.url,
       description: data.description || '',
       createdAt: new Date().toISOString(),
     };
 
-    // Сохраняем метаданные изображения в MongoDB
     return super.create(newImage, params);
   }
 

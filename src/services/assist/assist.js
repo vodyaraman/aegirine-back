@@ -1,10 +1,11 @@
+// Настраиваем multer для загрузки файлов
 import multer from 'multer';
 import { ImagesService, getOptions as getImagesOptions } from './images.class.js';
 import { ClientLinksService, getOptions as getClientLinksOptions } from './clientLinks.class.js';
 import { imageValidator } from './images.schema.js';
 import { clientLinkValidator } from './clientLinks.schema.js';
+import { CreateMenuService, getOptions as getMenuOptions } from '../create/create.class.js'; // Добавляем MenuService
 import pkg from '@feathersjs/schema';
-
 const { validate } = pkg;
 
 // Настраиваем multer
@@ -13,19 +14,35 @@ const upload = multer();
 export const assist = (app) => {
   const imagesService = new ImagesService(getImagesOptions(app));
   const clientLinksService = new ClientLinksService(getClientLinksOptions(app));
+  const menuService = new CreateMenuService(getMenuOptions(app)); // Инициализируем MenuService
 
   // Маршрут для загрузки изображения
   app.post('/images', upload.single('image'), async (req, res) => {
     try {
       // Создаем изображение
       const createdImage = await imagesService.create(req.body, { file: req.file });
+  
+      // Получаем ImageId, описание и URL изображения
+      const { imageId, description, url: imageUrl } = createdImage;
+  
+      // Обновляем коллекцию меню на основе описания изображения
+      let updateField = {};
+      if (description === 'Background image') {
+        updateField = { backgroundImage: { imageId, imageUrl } };  // Используем объект для backgroundImage
+      } else if (description === 'Mascot image') {
+        updateField = { mascotImage: { imageId, imageUrl } };  // Используем объект для mascotImage
+      }
+  
+      if (Object.keys(updateField).length > 0) {
+        await menuService.updateImageInMenu(req, updateField);  // Передаем объект обновленного изображения
+      }
+  
       res.status(201).json(createdImage);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  });
+  });  
 
-  // Получение изображения
   app.get('/images/:id', async (req, res) => {
     try {
       const image = await imagesService.get(req.params.id);
@@ -35,10 +52,9 @@ export const assist = (app) => {
     }
   });
 
-  // Обновление изображения
   app.patch('/images/:id', async (req, res) => {
     try {
-      await validate(imageValidator, req.body); // Валидируем данные перед обновлением
+      await validate(imageValidator, req.body);
       const updatedImage = await imagesService.patch(req.params.id, req.body);
       res.status(200).json(updatedImage);
     } catch (error) {
@@ -46,7 +62,6 @@ export const assist = (app) => {
     }
   });
 
-  // Удаление изображения
   app.delete('/images/:id', async (req, res) => {
     try {
       const result = await imagesService.remove(req.params.id);
@@ -56,10 +71,9 @@ export const assist = (app) => {
     }
   });
 
-  // Маршрут для работы с клиентскими ссылками
   app.post('/client-links', async (req, res) => {
     try {
-      await validate(clientLinkValidator, req.body); // Валидируем данные перед созданием
+      await validate(clientLinkValidator, req.body);
       const createdClientLink = await clientLinksService.create(req.body);
       res.status(201).json(createdClientLink);
     } catch (error) {

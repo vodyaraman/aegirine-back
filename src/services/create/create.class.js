@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 export class CreateMenuService extends MongoDBService {
   async update(id, data, params) {
     const db = await this.getDatabase();
-    const collection = db.collection('menu'); 
+    const collection = db.collection('menu');
 
     const token = params.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -35,7 +35,7 @@ export class CreateMenuService extends MongoDBService {
 
   async remove(id, params) {
     const db = await this.getDatabase();
-    const collection = db.collection('menu'); 
+    const collection = db.collection('menu');
 
     const token = params.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -69,7 +69,34 @@ export class CreateMenuService extends MongoDBService {
 
     return menu;
   }
-
+  async updateImageInMenu(params, updateField) {
+    const db = await this.getDatabase();
+    const collection = db.collection('menu');
+  
+    const token = params.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  
+    const menuId = decoded.connectionId;
+  
+    // Проверяем наличие меню с данным ID
+    let existingMenu = await collection.findOne({ menuId });
+    if (!existingMenu) {
+      throw new Error(`Menu with ID ${menuId} not found`);
+    }
+  
+    // Обновляем поле в меню (backgroundImage или mascotImage)
+    if (updateField.backgroundImage) {
+      updateField = { 'images.backgroundImage': updateField.backgroundImage };
+    } else if (updateField.mascotImage) {
+      updateField = { 'images.mascotImage': updateField.mascotImage };
+    }
+  
+    await collection.updateOne({ menuId }, { $set: updateField });
+  
+    // Возвращаем обновленное меню
+    return collection.findOne({ menuId });
+  }  
+  
   async getDatabase() {
     return this.options.Model;
   }
