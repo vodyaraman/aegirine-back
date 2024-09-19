@@ -5,6 +5,7 @@ export class CreateMenuService extends MongoDBService {
   async update(id, data, params) {
     const db = await this.getDatabase();
     const collection = db.collection('menu');
+    console.log("Обновление меню на уровне метода", data);
 
     const token = params.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -23,7 +24,7 @@ export class CreateMenuService extends MongoDBService {
     } else {
       const updatedData = {
         ...data,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
 
       await collection.updateOne({ menuId }, { $set: updatedData });
@@ -31,7 +32,7 @@ export class CreateMenuService extends MongoDBService {
     }
 
     return existingMenu;
-  }
+}
 
   async remove(id, params) {
     const db = await this.getDatabase();
@@ -61,14 +62,16 @@ export class CreateMenuService extends MongoDBService {
 
     const menuId = decoded.connectionId;
 
-    const menu = await collection.findOne({ menuId });
+    // Используем проекцию, чтобы исключить _id
+    const menu = await collection.findOne({ menuId }, { projection: { _id: 0 } });
 
     if (!menu) {
       throw new Error(`Menu with ID ${menuId} not found`);
     }
 
     return menu;
-  }
+}
+
   async updateImageInMenu(params, updateField) {
     const db = await this.getDatabase();
     const collection = db.collection('menu');
