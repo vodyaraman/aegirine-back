@@ -2,37 +2,56 @@ import { MongoDBService } from '@feathersjs/mongodb';
 import jwt from 'jsonwebtoken';
 
 export class CreateMenuService extends MongoDBService {
-  async update(id, data, params) {
+  async init(params) {
     const db = await this.getDatabase();
     const collection = db.collection('menu');
-    console.log("Обновление меню на уровне метода", data);
 
     const token = params.headers.authorization.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     const menuId = decoded.connectionId;
 
     let existingMenu = await collection.findOne({ menuId });
 
     if (!existingMenu) {
+      // Создаём новое меню, если его не существует
       const newMenu = {
         menuId,
-        ...data,
-        lastUpdated: new Date().toISOString()
-      };
-      existingMenu = await collection.insertOne(newMenu);
-    } else {
-      const updatedData = {
-        ...data,
         lastUpdated: new Date().toISOString(),
       };
-
-      await collection.updateOne({ menuId }, { $set: updatedData });
-      existingMenu = await collection.findOne({ menuId });
+      existingMenu = await collection.insertOne(newMenu);
     }
 
     return existingMenu;
-}
+  }
+
+  async update(data, params) {
+    const db = await this.getDatabase();
+    const collection = db.collection('menu');
+
+    // Извлекаем токен и получаем menuId из connectionId
+    const token = params.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const menuId = decoded.connectionId;
+
+    // Проверяем, существует ли меню с таким menuId
+    let existingMenu = await collection.findOne({ menuId });
+
+    if (!existingMenu) {
+      throw new Error(`Menu with ID ${menuId} not found`);
+    }
+
+    // Обновляем данные меню
+    const updatedData = {
+      ...data,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    // Выполняем обновление
+    await collection.updateOne({ menuId }, { $set: updatedData });
+    existingMenu = await collection.findOne({ menuId });
+
+    return existingMenu;
+  }
 
   async remove(id, params) {
     const db = await this.getDatabase();

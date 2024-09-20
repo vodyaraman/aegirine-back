@@ -3,14 +3,23 @@ import { CreateMenuService, getOptions } from './create.class.js';
 export const create = (app) => {
   const service = new CreateMenuService(getOptions(app));
 
-  app.put('/update', async (req, res) => {
+  app.post('/init', async (req, res) => {
     try {
-      const updatedMenu = await service.update(null, req.body, { headers: req.headers });
-      res.status(200).json(updatedMenu);
+      const response = await createMenuService.init(req);
+      res.status(201).json(response);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  });
+  });  
+
+  app.put('/update', async (req, res) => {
+    try {
+      const response = await createMenuService.update(req.body, req);
+      res.status(200).json(response);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }); 
 
   app.delete('/delete', async (req, res) => {
     try {
