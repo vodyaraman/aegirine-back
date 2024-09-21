@@ -10,15 +10,15 @@ export class CreateMenuService extends MongoDBService {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const menuId = decoded.connectionId;
 
-    let existingMenu = await collection.findOne({ menuId });
+    let existingMenu = await collection.findOne({ menuId }, { projection: { _id: 0 } });
 
     if (!existingMenu) {
-      // Создаём новое меню, если его не существует
       const newMenu = {
         menuId,
         lastUpdated: new Date().toISOString(),
       };
-      existingMenu = await collection.insertOne(newMenu);
+    await collection.insertOne(newMenu, { projection: { _id: 0 } });
+    existingMenu = {};
     }
 
     return existingMenu;

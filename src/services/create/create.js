@@ -5,7 +5,7 @@ export const create = (app) => {
 
   app.post('/init', async (req, res) => {
     try {
-      const response = await createMenuService.init(req);
+      const response = await service.init(req);
       res.status(201).json(response);
     } catch (error) {
       res.status(400).json({ error: error.message });
@@ -14,7 +14,7 @@ export const create = (app) => {
 
   app.put('/update', async (req, res) => {
     try {
-      const response = await createMenuService.update(req.body, req);
+      const response = await service.update(req.body, req);
       res.status(200).json(response);
     } catch (error) {
       res.status(400).json({ error: error.message });
