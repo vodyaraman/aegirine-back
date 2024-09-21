@@ -44,4 +44,14 @@ export const links = (app) => {
       res.status(400).json({ error: error.message });
     }
   });
+
+  app.get('/get-link', async (req, res) => {
+    try {
+      const service = new LinksService(getOptions(app)); 
+      const response = await service.getLink(req);  // Вызываем метод для получения ссылки
+      res.status(200).json(response);  // Возвращаем результат
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });  
 };
