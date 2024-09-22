@@ -1,37 +1,36 @@
 import { MongoDBService } from '@feathersjs/mongodb';
+import jwt from 'jsonwebtoken';
 
 export class ClientLinksService extends MongoDBService {
-  async create(data, params) {
-    const { connectionId, clientUrl } = data;
+  async handleClientLink(token) {
+    // Декодируем токен, чтобы получить connectionId
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { connectionId } = decoded;
 
-    if (!connectionId || !clientUrl) {
-      throw new Error('Missing required fields: connectionId or clientUrl');
-    }
-
+    // Получаем доступ к базе данных и коллекции
     const db = await this.getDatabase();
     const collection = db.collection('clientLinks');
 
-    const newClientLink = {
-      connectionId,
-      clientUrl,
-      createdAt: new Date().toISOString(),
-    };
+    // Ищем запись с connectionId
+    const existingLink = await collection.findOne({ connectionId });
 
-    const result = await collection.insertOne(newClientLink);
-    return result
-  }
+    if (existingLink) {
+      // Если запись найдена, возвращаем clientUrl
+      return { clientUrl: existingLink.clientUrl };
+    } else {
+      // Если записи нет, создаем новую запись
+      const clientUrl = `${process.env.CLIENT_HOST}client/${connectionId}`;
+      const newClientLink = {
+        connectionId,
+        clientUrl,
+        createdAt: new Date().toISOString(),
+      };
 
-  async get(id, params) {
-    const db = await this.getDatabase();
-    const collection = db.collection('clientLinks');
+      // Вставляем новую запись в базу данных
+      await collection.insertOne(newClientLink);
 
-    const link = await collection.findOne({ connectionId: id });
-    
-    if (!link) {
-      throw new Error(`Client link for connectionId ${id} not found`);
+      return { clientUrl };
     }
-
-    return link;
   }
 
   async getDatabase() {

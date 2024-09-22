@@ -5,18 +5,26 @@ import jwt from 'jsonwebtoken';
 export class LinksService extends MongoDBService {
   async create(data, params) {
     const connectionId = crypto.randomBytes(7).toString('hex');
-
     const jwtToken = jwt.sign({ connectionId }, process.env.JWT_SECRET);
-
+    
+    // Подключаемся к базе данных
+    const db = await this.getDatabase();
+    const collection = db.collection('links');
+  
+    // Формируем данные для вставки в базу
     const newData = {
       connectionId,
       jwtToken,
       serviceName: data.serviceName,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
-
-    return await super.create(newData, params);
+  
+    // Вставляем данные в базу
+    await collection.insertOne(newData);
+  
+    return newData;
   }
+  
 
   async getLink(params) {
     const db = await this.getDatabase();

@@ -1,14 +1,12 @@
-// Настраиваем multer для загрузки файлов
 import multer from 'multer';
 import { ImagesService, getOptions as getImagesOptions } from './images.class.js';
 import { ClientLinksService, getOptions as getClientLinksOptions } from './clientLinks.class.js';
 import { imageValidator } from './images.schema.js';
 import { clientLinkValidator } from './clientLinks.schema.js';
-import { CreateMenuService, getOptions as getMenuOptions } from '../create/create.class.js'; // Добавляем MenuService
+import { CreateMenuService, getOptions as getMenuOptions } from '../create/create.class.js';
 import pkg from '@feathersjs/schema';
 const { validate } = pkg;
 
-// Настраиваем multer
 const upload = multer();
 
 export const assist = (app) => {
@@ -71,22 +69,13 @@ export const assist = (app) => {
     }
   });
 
-  app.post('/client-links', async (req, res) => {
+  app.post('/client-link', async (req, res) => {
     try {
-      await validate(clientLinkValidator, req.body);
-      const createdClientLink = await clientLinksService.create(req.body);
-      res.status(201).json(createdClientLink);
+      const token = req.headers.authorization.split(' ')[1];
+      const clientLink = await clientLinksService.handleClientLink(token);
+      res.status(200).json(clientLink);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
-  });
-
-  app.get('/client-links/:id', async (req, res) => {
-    try {
-      const clientLink = await clientLinksService.get(req.params.id);
-      res.status(200).json(clientLink);
-    } catch (error) {
-      res.status(404).json({ error: error.message });
-    }
-  });
+  });  
 };
