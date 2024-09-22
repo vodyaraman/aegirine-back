@@ -72,16 +72,10 @@ export class CreateMenuService extends MongoDBService {
   }
 
   // Новый метод для поиска меню по токену
-  async findMenuByToken(params) {
+  async findMenuById(menuId) {
     const db = await this.getDatabase();
     const collection = db.collection('menu');
 
-    const token = params.headers.authorization.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    const menuId = decoded.connectionId;
-
-    // Используем проекцию, чтобы исключить _id
     const menu = await collection.findOne({ menuId }, { projection: { _id: 0 } });
 
     if (!menu) {
@@ -90,6 +84,7 @@ export class CreateMenuService extends MongoDBService {
 
     return menu;
 }
+
 
   async updateImageInMenu(params, updateField) {
     const db = await this.getDatabase();

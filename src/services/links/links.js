@@ -20,7 +20,7 @@ export const links = (app) => {
     }
   });
 
-  app.get('/:serviceName/:connectionId', async (req, res) => {
+  app.get('/restaurant-service/:connectionId', async (req, res) => {
     try {
       const { connectionId } = req.params;
       const token = req.query.token;
