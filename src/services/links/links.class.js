@@ -44,7 +44,7 @@ export class LinksService extends MongoDBService {
     }
   
     // Формируем URL ссылки
-    const serviceUrl = `${params.protocol}://${params.get('host')}/${linkData.serviceName}/${linkData.connectionId}?token=${linkData.jwtToken}`;
+    const serviceUrl = `${process.env.SERVER_HOST}${linkData.serviceName}/${linkData.connectionId}?token=${linkData.jwtToken}`;
   
     // Возвращаем объект с результатом
     return {

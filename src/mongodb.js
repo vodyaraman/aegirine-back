@@ -6,4 +6,6 @@ export const mongodb = (app) => {
   const mongoClient = MongoClient.connect(connection).then((client) => client.db(database));
 
   app.set('mongodbClient', mongoClient); 
+
+  console.log("Connected to mongoDB")
 };

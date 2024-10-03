@@ -19,7 +19,7 @@ export class ClientLinksService extends MongoDBService {
       return { clientUrl: existingLink.clientUrl };
     } else {
       // Если записи нет, создаем новую запись
-      const clientUrl = `http://${process.env.HOST}:${process.env.PORT}/init/${connectionId}`;
+      const clientUrl = `${process.env.SERVER_HOST}init/${connectionId}`;
       const newClientLink = {
         connectionId,
         clientUrl,
